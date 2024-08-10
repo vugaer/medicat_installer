@@ -22,7 +22,7 @@ wget["default"]="wget"
 declare -A zip
 zip["arch"]="p7zip"
 zip["nixos"]="nixos.p7zip"
-zip["fedora"]="p7zip-full p7zip-plugins"
+zip["fedora"]="p7zip"
 zip["nobara"]="p7zip-full p7zip-plugins"
 zip["centos"]="p7zip p7zip-plugins"
 zip["alpine"]="7zip"
@@ -133,11 +133,10 @@ function downloadVentoy() {
 	local os="$1"
   	local ventoyPackage=$2
   	# Identify latest Ventoy release.
-  	venver=$(wget -q -O - https://api.github.com/repos/ventoy/Ventoy/releases/latest | grep '"tag_name":' | cut -d'"' -f4)
-
+	venver=$(curl -s https://api.github.com/repos/ventoy/Ventoy/releases/latest | grep -Po "(\d+\.)+\d+" | sort | uniq)
 	# Download latest verion of Ventoy.
-	colEcho $cyanB "\nDownloading Ventoy Version:$whiteB ${venver: -6}"
-	wget -q --show-progress https://github.com/ventoy/Ventoy/releases/download/v${venver: -6}/ventoy-${venver: -6}-linux.tar.gz -O ventoy.tar.gz
+	colEcho $cyanB "\nDownloading Ventoy Version:$whiteB ${venver}"
+	wget --force-progress -O ventoy.tar.gz https://github.com/ventoy/Ventoy/releases/download/v${venver}/ventoy-${venver}-linux.tar.gz
 
 	colEcho $cyanB "\nExtracting Ventoy..."
 	tar -xf ventoy.tar.gz
@@ -152,7 +151,7 @@ function downloadVentoy() {
 	fi
 
 	colEcho $cyanB "Renaming ventoy folder to remove the version number..."
-	mv ventoy-${venver: -6} ventoy
+	mv ventoy-${venver} ventoy
 }
 #-----------------------------------------------------------------------------#
 
@@ -169,6 +168,7 @@ colEcho $cyanB "Updated for efficiency and cross-distro use by SkeletonMan.\n"
 colEcho $cyanB "Enhancements by Manganar.\n"
 colEcho $cyanB "Thanks to @m3p89goljrf7fu9eched in the Medicat Discord for pointing out a bug.\n"
 colEcho $cyanB "Refactored by id3v1669.\n"
+colEcho $cyanB "Fedora support added by @vugaer"
 
 # Set variables to support different distros.
 # This needs to be fixed later, there is a better way, but I don't currently have the time - LordSkeletonMan
@@ -343,7 +343,7 @@ colEcho $cyanB "Mounting Medicat NTFS volume..."
 sudo mount $drive2 ./MedicatUSB -t ntfs3
 
 colEcho $cyanB "Extracting Medicat to NTFS volume..."
-7z x -O./MedicatUSB "$location"
+7za x -O./MedicatUSB "$location"
 
 colEcho $cyanB "MedicatUSB has been created."
 
